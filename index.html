@@ -2,68 +2,50 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Smart Process JSON Viewer</title>
-  <script src="https://api.bitrix24.com/api/v1/"></script>
+  <title>Лог сделок HR</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-bottom: 15px;
-      border: none;
-      border-radius: 6px;
-      background-color: #4CAF50;
-      color: white;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    pre {
-      background: #f5f5f5;
-      padding: 15px;
-      border-radius: 8px;
-      max-height: 500px;
-      overflow-y: auto;
-    }
+    body { font-family: Arial; padding: 20px; }
+    button { padding: 10px 20px; margin-bottom: 15px; border-radius: 6px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #45a049; }
+    pre { background: #f5f5f5; padding: 15px; border-radius: 8px; max-height: 600px; overflow-y: auto; }
   </style>
 </head>
 <body>
-  <h2>Смарт-процесс (ID 1036) — JSON массив</h2>
-  <button onclick="loadData()">Загрузить данные</button>
+  <h2>Лог сделок (JSON)</h2>
+  <button onclick="loadDeals()">Показать JSON</button>
   <pre id="output">Нажмите кнопку, чтобы получить данные...</pre>
 
   <script>
-    function loadData() {
+    async function loadDeals() {
       const output = document.getElementById("output");
       output.textContent = "Загрузка...";
 
-      BX24.init(function() {
-        BX24.callMethod(
-          "crm.item.list",
-          {
-            entityTypeId: 1036,
-            select: [
-              "UF_CRM_5_ID_SDELKI",
-              "UF_CRM_5_STAGE_FROM",
-              "UF_CRM_5_STAGE_TO",
-              "UF_CRM_5_WHO_CHANGED",
-              "UF_CRM_5_TIME_OF_CHANGE"
-            ],
-            order: { id: "desc" }
-          },
-          function(result) {
-            if(result.error()) {
-              output.textContent = "Ошибка: " + result.error();
-            } else {
-              output.textContent = JSON.stringify(result.data(), null, 2);
-            }
-          }
-        );
-      });
+      try {
+        const webhook = "https://dnk-labtest.bitrix24.ru/rest/1/wgpekxa1mk1ht13w/crm.deal.list.json";
+
+        const response = await fetch(webhook);
+        const data = await response.json();
+
+        if (!data.result) {
+          output.textContent = "Нет данных или ошибка вебхука";
+          return;
+        }
+
+        // Формируем ассоциативный массив: ID сделки → стадия → кто сдвинул, когда
+        const result = {};
+        data.result.forEach(deal => {
+          result[deal.ID] = {};
+          result[deal.STAGE_ID] = {
+            user_id: deal.ASSIGNED_BY_ID,
+            user_name: deal.ASSIGNED_BY_ID, // Имя можно подгрузить через crm.user.get
+            date_time: deal.DATE_MODIFY
+          };
+        });
+
+        output.textContent = JSON.stringify(result, null, 2);
+      } catch (err) {
+        output.textContent = "Ошибка: " + err;
+      }
     }
   </script>
 </body>
