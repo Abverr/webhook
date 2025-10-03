@@ -4,33 +4,62 @@
   <meta charset="UTF-8">
   <title>Smart Process JSON</title>
   <script src="https://api.bitrix24.com/api/v1/"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+      margin-bottom: 15px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 8px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+  </style>
 </head>
 <body>
-  <h2>JSON массив</h2>
-  <pre id="output">Загрузка...</pre>
+  <h2>Смарт-процесс (entityTypeId=1036)</h2>
+  <button onclick="loadData()">Загрузить данные</button>
+  <pre id="output">Нажмите кнопку, чтобы получить данные...</pre>
 
   <script>
-    BX24.init(function() {
-      BX24.callMethod(
-        "crm.item.list",
-        {
-          entityTypeId: 1036,
-          select: ["*", "uf_*"],
-          order: { "id": "desc" },
-          filter: {}
-        },
-        function(result) {
-          if(result.error()) {
-            document.getElementById("output").textContent =
-              "Ошибка: " + result.error();
-          } else {
-            document.getElementById("output").textContent =
-              JSON.stringify(result.data(), null, 2);
+    function loadData() {
+      document.getElementById("output").textContent = "Загрузка...";
+
+      BX24.init(function() {
+        BX24.callMethod(
+          "crm.item.list",
+          {
+            entityTypeId: 1036,
+            select: ["*", "uf_*"],
+            order: { "id": "desc" }
+          },
+          function(result) {
+            if(result.error()) {
+              document.getElementById("output").textContent =
+                "Ошибка: " + result.error();
+            } else {
+              document.getElementById("output").textContent =
+                JSON.stringify(result.data(), null, 2);
+            }
           }
-        }
-      );
-    });
+        );
+      });
+    }
   </script>
 </body>
 </html>
-
