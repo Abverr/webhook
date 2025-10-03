@@ -21,8 +21,8 @@
     output.textContent = "Загрузка...";
 
     try {
-      const webhookDeals = "https://YOUR_PORTAL.bitrix24.ru/rest/WEBHOOK_USER_ID/WEBHOOK_TOKEN/crm.deal.list.json";
-      const webhookUser = "https://YOUR_PORTAL.bitrix24.ru/rest/WEBHOOK_USER_ID/WEBHOOK_TOKEN/user.get.json";
+      const webhookDeals = "https://dnk-labtest.bitrix24.ru/rest/1/lsobaw3e7d8b2c1c/crm.deal.list.json";
+      const webhookUser = "https://dnk-labtest.bitrix24.ru/rest/1/wgpekxa1mk1ht13w/user.get.json";
 
       // 1. Получаем список сделок
       const resDeals = await fetch(webhookDeals);
@@ -41,15 +41,18 @@
       });
 
       // 3. Формируем результат
-      const result = {};
-      dataDeals.result.forEach(deal => {
-        result[deal.ID] = {};
-        result[deal.STAGE_ID] = {
-          user_id: deal.ASSIGNED_BY_ID,
-          user_name: users[deal.ASSIGNED_BY_ID] || deal.ASSIGNED_BY_ID,
-          date_time: deal.DATE_MODIFY
-        };
-      });
+   const result = {};
+dataDeals.result.forEach(deal => {
+  const dealId = deal.ID;
+  if (!result[dealId]) result[dealId] = {};
+
+  result[dealId][deal.STAGE_ID] = {
+    user_id: deal.ASSIGNED_BY_ID,
+    user_name: users[deal.ASSIGNED_BY_ID] || deal.ASSIGNED_BY_ID,
+    date_time: deal.DATE_MODIFY
+  };
+});
+
 
       output.textContent = JSON.stringify(result, null, 2);
 
@@ -60,4 +63,3 @@
 </script>
 </body>
 </html>
-
