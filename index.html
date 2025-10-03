@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Smart Process JSON</title>
+  <title>Smart Process JSON Viewer</title>
   <script src="https://api.bitrix24.com/api/v1/"></script>
   <style>
     body {
@@ -12,12 +12,12 @@
     button {
       padding: 10px 20px;
       font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 15px;
       border: none;
       border-radius: 6px;
       background-color: #4CAF50;
       color: white;
-      cursor: pointer;
-      margin-bottom: 15px;
     }
     button:hover {
       background-color: #45a049;
@@ -32,29 +32,34 @@
   </style>
 </head>
 <body>
-  <h2>Вебхук для смарт-процесса</h2>
+  <h2>Смарт-процесс (ID 1036) — JSON массив</h2>
   <button onclick="loadData()">Загрузить данные</button>
   <pre id="output">Нажмите кнопку, чтобы получить данные...</pre>
 
   <script>
     function loadData() {
-      document.getElementById("output").textContent = "Загрузка...";
+      const output = document.getElementById("output");
+      output.textContent = "Загрузка...";
 
       BX24.init(function() {
         BX24.callMethod(
           "crm.item.list",
           {
             entityTypeId: 1036,
-            select: ["*", "uf_*"],
-            order: { "id": "desc" }
+            select: [
+              "UF_CRM_5_ID_SDELKI",
+              "UF_CRM_5_STAGE_FROM",
+              "UF_CRM_5_STAGE_TO",
+              "UF_CRM_5_WHO_CHANGED",
+              "UF_CRM_5_TIME_OF_CHANGE"
+            ],
+            order: { id: "desc" }
           },
           function(result) {
             if(result.error()) {
-              document.getElementById("output").textContent =
-                "Ошибка: " + result.error();
+              output.textContent = "Ошибка: " + result.error();
             } else {
-              document.getElementById("output").textContent =
-                JSON.stringify(result.data(), null, 2);
+              output.textContent = JSON.stringify(result.data(), null, 2);
             }
           }
         );
@@ -63,4 +68,3 @@
   </script>
 </body>
 </html>
-
