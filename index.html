@@ -15,38 +15,49 @@
   <button onclick="loadDeals()">Показать JSON</button>
   <pre id="output">Нажмите кнопку, чтобы получить данные...</pre>
 
-  <script>
-    async function loadDeals() {
-      const output = document.getElementById("output");
-      output.textContent = "Загрузка...";
+<script>
+  async function loadDeals() {
+    const output = document.getElementById("output");
+    output.textContent = "Загрузка...";
 
-      try {
-        const webhook = "https://dnk-labtest.bitrix24.ru/rest/1/wgpekxa1mk1ht13w/crm.deal.list.json";
+    try {
+      const webhookDeals = "https://YOUR_PORTAL.bitrix24.ru/rest/WEBHOOK_USER_ID/WEBHOOK_TOKEN/crm.deal.list.json";
+      const webhookUser = "https://YOUR_PORTAL.bitrix24.ru/rest/WEBHOOK_USER_ID/WEBHOOK_TOKEN/user.get.json";
 
-        const response = await fetch(webhook);
-        const data = await response.json();
-
-        if (!data.result) {
-          output.textContent = "Нет данных или ошибка вебхука";
-          return;
-        }
-
-        // Формируем ассоциативный массив: ID сделки → стадия → кто сдвинул, когда
-        const result = {};
-        data.result.forEach(deal => {
-          result[deal.ID] = {};
-          result[deal.STAGE_ID] = {
-            user_id: deal.ASSIGNED_BY_ID,
-            user_name: deal.ASSIGNED_BY_ID, // Имя можно подгрузить через crm.user.get
-            date_time: deal.DATE_MODIFY
-          };
-        });
-
-        output.textContent = JSON.stringify(result, null, 2);
-      } catch (err) {
-        output.textContent = "Ошибка: " + err;
+      // 1. Получаем список сделок
+      const resDeals = await fetch(webhookDeals);
+      const dataDeals = await resDeals.json();
+      if (!dataDeals.result) {
+        output.textContent = "Нет данных или ошибка вебхука";
+        return;
       }
+
+      // 2. Получаем список пользователей
+      const resUsers = await fetch(webhookUser);
+      const dataUsers = await resUsers.json();
+      const users = {};
+      dataUsers.result.forEach(user => {
+        users[user.ID] = user.NAME + ' ' + user.LAST_NAME;
+      });
+
+      // 3. Формируем результат
+      const result = {};
+      dataDeals.result.forEach(deal => {
+        result[deal.ID] = {};
+        result[deal.STAGE_ID] = {
+          user_id: deal.ASSIGNED_BY_ID,
+          user_name: users[deal.ASSIGNED_BY_ID] || deal.ASSIGNED_BY_ID,
+          date_time: deal.DATE_MODIFY
+        };
+      });
+
+      output.textContent = JSON.stringify(result, null, 2);
+
+    } catch (err) {
+      output.textContent = "Ошибка: " + err;
     }
-  </script>
+  }
+</script>
 </body>
 </html>
+
