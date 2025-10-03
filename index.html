@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Process JSON</title>
+  <script src="https://api.bitrix24.com/api/v1/"></script>
+</head>
+<body>
+  <h2>Данные смарт-процесса (entityTypeId=1036)</h2>
+  <pre id="output">Загрузка...</pre>
+
+  <script>
+    BX24.init(function() {
+      BX24.callMethod(
+        "crm.item.list",
+        {
+          entityTypeId: 1036,
+          select: ["*", "uf_*"],
+          order: { "id": "desc" },
+          filter: {}
+        },
+        function(result) {
+          if(result.error()) {
+            document.getElementById("output").textContent =
+              "Ошибка: " + result.error();
+          } else {
+            document.getElementById("output").textContent =
+              JSON.stringify(result.data(), null, 2);
+          }
+        }
+      );
+    });
+  </script>
+</body>
+</html>
